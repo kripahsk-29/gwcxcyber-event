@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bug Hunt 🐛</title>
+<style>
+  /* ============================================================
+     BUG HUNT — STYLES
+     Dark purple/black/green/orange Halloween + "terminal" palette.
+     Decorative emoji are purely visual (pointer-events:none) and
+     never block clicks.
+     ============================================================ */
+
+  :root{
+    --bg-dark:#120a1c;
+    --bg-darker:#0a0511;
+    --purple:#2c1a45;
+    --purple-light:#49306c;
+    --orange:#ff8c2b;
+    --orange-bright:#ffb347;
+    --red:#ff4d4d;
+    --green:#4ee17c;
+    --code-green:#5df28c;
+    --text-light:#f3ecff;
+    --text-dim:#c9bbdf;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    min-height:100%;
+    background: radial-gradient(ellipse at top, var(--purple) 0%, var(--bg-dark) 55%, var(--bg-darker) 100%);
+    color: var(--text-light);
+    font-family: Arial, Helvetica, "Segoe UI", sans-serif;
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3{
+    font-family: "Copperplate", "Papyrus", fantasy, cursive, Arial, sans-serif;
+    letter-spacing: 1px;
+    color: var(--orange-bright);
+    text-shadow: 0 0 10px rgba(255,140,43,0.5);
+  }
+
+  .hidden{ display:none !important; }
+
+  /* ---------- decorative background ---------- */
+  .deco{
+    position: fixed;
+    pointer-events: none;
+    opacity: 0.22;
+    font-size: 2.6rem;
+    z-index: 0;
+    user-select: none;
+  }
+  #deco1{ top: 4%;  left: 3%;  }
+  #deco2{ top: 8%;  right: 4%; font-size: 2rem; }
+  #deco3{ bottom: 6%; left: 5%; }
+  #deco4{ bottom: 10%; right: 6%; font-size: 2.2rem; }
+  #deco5{ top: 45%; left: 1%; font-size: 1.6rem; }
+  #deco6{ top: 60%; right: 2%; font-size: 1.6rem; }
+
+  /* ---------- screens ---------- */
+  .screen{
+    position: relative;
+    z-index: 1;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+    min-height: 100vh;
+  }
+
+  .card{
+    background: rgba(18, 10, 28, 0.88);
+    border: 2px solid var(--purple-light);
+    border-radius: 16px;
+    padding: 24px 28px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.5);
+  }
+
+  .center{ text-align: center; }
+
+  /* ---------- buttons ---------- */
+  button{
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    transition: transform 0.1s ease, filter 0.15s ease;
+  }
+  button:active{ transform: scale(0.97); }
+  button:disabled{ opacity:0.5; cursor:not-allowed; }
+
+  .btn-primary{
+    background: linear-gradient(135deg, var(--orange), #d9530f);
+    color: #1a0e2a;
+    font-weight: bold;
+  }
+  .btn-primary:hover:not(:disabled){ filter: brightness(1.1); }
+
+  .btn-secondary{
+    background: var(--purple-light);
+    color: var(--text-light);
+  }
+  .btn-secondary:hover:not(:disabled){ filter: brightness(1.2); }
+
+  .btn-skip{
+    background: transparent;
+    color: var(--text-dim);
+    border: 2px solid var(--purple-light);
+  }
+  .btn-skip:hover:not(:disabled){ color: var(--text-light); border-color: var(--orange); }
+
+  .btn-big{
+    font-size: 1.3rem;
+    padding: 18px 30px;
+    width: 100%;
+  }
+
+  .top-toggles{
+    display:flex;
+    justify-content:center;
+    gap: 20px;
+    margin-top: 16px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    flex-wrap: wrap;
+  }
+  .top-toggles label{ cursor:pointer; }
+
+  /* ---------- start screen ---------- */
+  #startScreen h1{ font-size: 2.6rem; margin-bottom: 4px; }
+  #startScreen .subtitle{ color: var(--text-dim); margin-bottom: 20px; }
+  #startScreen input[type="text"]{
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid var(--purple-light);
+    background: var(--bg-darker);
+    color: var(--text-light);
+    margin-bottom: 18px;
+  }
+  .rules-list{ text-align:left; color: var(--text-dim); font-size: 0.95rem; }
+  .rules-list li{ margin-bottom: 6px; }
+
+  /* ---------- game screen top bar ---------- */
+  .topbar{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  #timerDisplay{
+    font-size: 1.4rem;
+    padding: 6px 14px;
+    border-radius: 10px;
+    background: var(--purple);
+    border: 2px solid var(--purple-light);
+  }
+  #timerDisplay.timer-orange{ background:#4a3200; border-color: var(--orange); color: var(--orange-bright); }
+  #timerDisplay.timer-red{ background:#4a0000; border-color: var(--red); color:#ffbcbc; animation: pulseRed 1.4s infinite; }
+  @keyframes pulseRed{ 0%,100%{ opacity:1; } 50%{ opacity:0.65; } }
+
+  #scoreDisplay{ font-size: 1.2rem; }
+  #progressDisplay{ color: var(--text-dim); font-weight: normal; font-size: 0.95rem; }
+
+  .icon-btn{
+    background: var(--purple-light);
+    color: var(--text-light);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.95rem;
+  }
+
+  /* ---------- bug jar progress strip ---------- */
+  #jarStrip{
+    display:flex;
+    gap: 6px;
+    justify-content:center;
+    margin-bottom: 16px;
+    font-size: 1.4rem;
+  }
+  .jar-slot{ opacity: 0.35; }
+  .jar-slot.caught{ opacity: 1; }
+
+  /* ---------- level header ---------- */
+  #levelTitle{ margin: 0 0 4px 0; }
+  #levelDescription{ color: var(--text-dim); margin-top: 0; }
+  .io-row{
+    display:flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 12px 0 16px;
+  }
+  .io-box{
+    flex: 1;
+    min-width: 220px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+  }
+  .io-box .io-label{ color: var(--text-dim); font-weight:bold; display:block; margin-bottom:4px; }
+
+  /* ---------- code block ---------- */
+  #codeBlock{
+    background: var(--bg-darker);
+    border: 2px solid var(--purple-light);
+    border-radius: 10px;
+    padding: 10px 0;
+    margin-bottom: 14px;
+    overflow-x: auto;
+  }
+  .codeline{
+    display:flex;
+    align-items: baseline;
+    gap: 14px;
+    padding: 6px 16px;
+    font-family: "Courier New", "Consolas", monospace;
+    font-size: 1.05rem;
+    white-space: pre;
+    border-radius: 6px;
+  }
+  .codeline .ln{
+    color: var(--text-dim);
+    min-width: 1.6em;
+    text-align: right;
+    user-select: none;
+  }
+  .codeline .code-text{ color: var(--code-green); }
+
+  #codeBlock.find-stage .codeline{ cursor: pointer; }
+  #codeBlock.find-stage .codeline:hover{ background: rgba(255,179,71,0.15); }
+  #codeBlock.fix-stage .codeline{ cursor: default; }
+
+  .line-correct{ background: rgba(78,225,124,0.22) !important; outline: 2px solid var(--green); }
+  .line-wrong{ background: rgba(255,77,77,0.18) !important; outline: 2px solid var(--red); }
+
+  .tag{
+    display:inline-block;
+    font-size: 0.75rem;
+    font-weight:bold;
+    padding: 1px 6px;
+    border-radius: 6px;
+    margin-left: 8px;
+    white-space: nowrap;
+    font-family: Arial, sans-serif;
+  }
+  .tag-good{ background: var(--green); color:#063016; }
+  .tag-bad{ background: var(--red); color:#300606; }
+
+  /* ---------- feedback / hint / trace ---------- */
+  #findFeedback, #fixFeedback{
+    margin: 8px 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+  #findFeedback.good, #fixFeedback.good{ background: rgba(78,225,124,0.18); border: 2px solid var(--green); }
+  #findFeedback.bad, #fixFeedback.bad{ background: rgba(255,77,77,0.18); border: 2px solid var(--red); }
+
+  .action-row{
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  #hintText, #traceBox{
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(255,179,71,0.12);
+    border-left: 4px solid var(--orange);
+    border-radius: 6px;
+  }
+
+  #traceBox table{ border-collapse: collapse; width:100%; margin-top: 6px; font-family: "Courier New", monospace; font-size: 0.9rem; }
+  #traceBox th, #traceBox td{ border: 1px solid var(--purple-light); padding: 6px 10px; text-align:left; }
+  #traceBox th{ color: var(--orange-bright); }
+
+  /* ---------- fix options ---------- */
+  #optionsBox{ margin-top: 10px; }
+  .option-btn{
+    display:block;
+    width:100%;
+    text-align:left;
+    background: var(--purple-light);
+    color: var(--text-light);
+    margin-bottom: 10px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    font-family: "Courier New", monospace;
+  }
+  .option-btn:hover:not(:disabled){ filter: brightness(1.2); }
+  .opt-correct{ background: rgba(78,225,124,0.35) !important; outline: 2px solid var(--green); }
+  .opt-wrong{ background: rgba(255,77,77,0.3) !important; outline: 2px solid var(--red); }
+
+  #explanationBox{
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    color: var(--text-dim);
+  }
+
+  #nextBtn{ margin-top: 18px; }
+
+  /* ---------- end screen ---------- */
+  #endScreen h1{ font-size: 2.2rem; }
+  .stat-row{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  .stat-box{
+    background: var(--bg-darker);
+    border: 2px solid var(--purple-light);
+    border-radius: 12px;
+    padding: 14px 20px;
+    min-width: 140px;
+  }
+  .stat-box .big{ font-size: 1.8rem; font-weight:bold; color: var(--orange-bright); }
+  .stat-box .small-label{ color: var(--text-dim); font-size: 0.85rem; }
+
+  .code-box{
+    margin: 20px auto;
+    max-width: 420px;
+    padding: 18px;
+    border: 3px dashed var(--orange);
+    border-radius: 12px;
+    background: rgba(255,140,43,0.08);
+    font-size: 1.6rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: var(--orange-bright);
+  }
+
+  /* ---------- facilitator overlay (Shift+A) ---------- */
+  #facilitatorOverlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(5,2,10,0.96);
+    z-index: 50;
+    overflow-y: auto;
+    padding: 30px;
+  }
+  #facilitatorOverlay table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  #facilitatorOverlay th, #facilitatorOverlay td{
+    border: 1px solid var(--purple-light);
+    padding: 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  #facilitatorOverlay th{ background: var(--purple); color: var(--orange-bright); }
+
+  @media (max-width: 600px){
+    body{ font-size: 16px; }
+    .io-row{ flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- purely decorative Halloween flair -->
+  <div class="deco" id="deco1" aria-hidden="true">🦇</div>
+  <div class="deco" id="deco2" aria-hidden="true">🕸️</div>
+  <div class="deco" id="deco3" aria-hidden="true">🎃</div>
+  <div class="deco" id="deco4" aria-hidden="true">👻</div>
+  <div class="deco" id="deco5" aria-hidden="true">🐛</div>
+  <div class="deco" id="deco6" aria-hidden="true">🕸️</div>
+
+  <!-- ===================================================================
+       START SCREEN
+       =================================================================== -->
+  <div class="screen" id="startScreen">
+    <div class="card center">
+      <h1>🐛 Bug Hunt 🎃</h1>
+      <p class="subtitle">A Halloween code-debugging game — Escape the Bug</p>
+
+      <p style="text-align:left;">You'll see 8 short spooky programs written in plain-English
+      pseudocode. Each one is SUPPOSED to do something simple — but a bug snuck in! Your team
+      clicks the line you think is broken, then picks the fix.</p>
+
+      <label for="teamNameInput" style="display:block; text-align:left; margin-top:14px;">Team name:</label>
+      <input type="text" id="teamNameInput" placeholder="e.g. The Byte Club" maxlength="40">
+
+      <ul class="rules-list">
+        <li>✅ <strong>+10 points</strong> for clicking the buggy line on your first try (<strong>+5</strong> on your second try)</li>
+        <li>✅ <strong>+10 points</strong> for picking the correct fix</li>
+        <li>💡 <strong>−3 points</strong> if you use the one hint allowed per level</li>
+        <li>🔍 <strong>−3 points</strong> if you use "Trace It" to step through the code's values</li>
+        <li>⏭️ Stuck? Hit <strong>Skip</strong> to move on without losing the whole game</li>
+        <li>⏳ You have <strong>10 minutes</strong> for all 8 levels — the timer turns orange, then red!</li>
+      </ul>
+
+      <button class="btn-primary btn-big" id="startBtn">Start Game ▶</button>
+
+      <div class="top-toggles">
+        <label><input type="checkbox" id="soundToggle"> 🔈 Sound effects (off by default)</label>
+        <button class="icon-btn" id="fullscreenBtn" type="button">⛶ Fullscreen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       GAME SCREEN
+       =================================================================== -->
+  <div class="screen hidden" id="gameScreen">
+    <div class="topbar">
+      <div id="timerDisplay">⏳ 10:00</div>
+      <div id="progressDisplay">Level 1 of 8</div>
+      <div id="scoreDisplay">⭐ Score: 0</div>
+    </div>
+
+    <div id="jarStrip"><!-- 8 jar slots rendered by JS --></div>
+
+    <div class="card">
+      <h2 id="levelTitle">Level Title</h2>
+      <p id="levelDescription">What this code should do.</p>
+
+      <div class="io-row">
+        <div class="io-box"><span class="io-label">✅ Expected output</span><span id="expectedOutput"></span></div>
+        <div class="io-box"><span class="io-label">❌ Actual (buggy) output</span><span id="actualOutput"></span></div>
+      </div>
+
+      <div id="codeBlock" class="find-stage"><!-- code lines rendered by JS --></div>
+
+      <div class="action-row">
+        <button class="btn-secondary" id="hintBtn">💡 Use Hint (−3 pts)</button>
+        <button class="btn-secondary" id="traceBtn">🔍 Trace It (−3 pts)</button>
+        <button class="btn-skip" id="skipBtn">⏭️ Skip This Level</button>
+      </div>
+      <div id="hintText" class="hidden"></div>
+      <div id="traceBox" class="hidden"></div>
+
+      <div id="findFeedback" class="hidden"></div>
+
+      <div id="optionsBox" class="hidden">
+        <p><strong>🔧 How should we fix it?</strong></p>
+        <div id="optionsList"></div>
+      </div>
+
+      <div id="fixFeedback" class="hidden"></div>
+      <div id="explanationBox" class="hidden"></div>
+
+      <button class="btn-primary btn-big hidden" id="nextBtn">Next Level ➡</button>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       END SCREEN
+       =================================================================== -->
+  <div class="screen hidden" id="endScreen">
+    <div class="card center">
+      <h1 id="endTitle">🏁 All Levels Complete!</h1>
+      <p>Great debugging, <strong id="endTeamName">Mystery Team</strong>!</p>
+
+      <div class="stat-row">
+        <div class="stat-box"><div class="big" id="endScore">0</div><div class="small-label">Final Score</div></div>
+        <div class="stat-box"><div class="big" id="endBugs">0/8</div><div class="small-label">Bugs Caught</div></div>
+      </div>
+
+      <p>🔑 Your secret escape code — write this down!</p>
+      <div class="code-box" id="endCode">------</div>
+
+      <button class="btn-primary btn-big" id="resetBtn">🔁 Reset for Next Team</button>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       FACILITATOR OVERLAY — press Shift+A to toggle, any screen
+       =================================================================== -->
+  <div id="facilitatorOverlay" class="hidden">
+    <h2>🧑‍🏫 Facilitator Answer Key <span style="font-size:0.9rem; color:var(--text-dim);">(press Shift+A to close)</span></h2>
+    <div id="facilitatorContent"></div>
+  </div>
+
+
+<script>
+/* ======================================================================
+   BUG HUNT — GAME SCRIPT
+   Written to be easy for beginner JavaScript club members to read & edit.
+
+   HOW TO EDIT THE LEVELS:
+   Scroll down to the big "LEVELS" array below. Each level is one object
+   in { } curly braces. Copy an existing one and change the text to make
+   a new level, or edit the text in place to change an existing one.
+   ====================================================================== */
+
+// The word teams write down at the end. Change this any time.
+const SECRET_CODE = "CAFFEINE-DEBUGGER-42";
+
+/* ----------------------------------------------------------------------
+   LEVELS ARRAY
+   Each level object looks like this:
+
+   {
+     title:        shown at the top of the level, can include an emoji
+     description:  one sentence saying what the code SHOULD do
+     expected:     what the output should be if the code were correct
+     actual:       what the output actually is, because of the bug
+     code:         an array of strings, one per line of pseudocode.
+                   Leading spaces (like "    PRINT ...") are kept so
+                   IF/FOR bodies look indented.
+     bugLine:      which line number (counting from 1) has the bug
+     options:      3-4 possible fixes, written out in plain English
+     correctOption: which option (counting from 0) is the right fix
+     explanation:  shown after they pick the fix correctly
+     hint:         a nudge, shown if the team spends 3 points on a hint
+     trace:        an array of steps for the "Trace It" button. Each
+                   step is { line: lineNumber, vars: { name: value, ... } }
+                   showing what's happening as the program runs.
+   }
+---------------------------------------------------------------------- */
+const LEVELS = [
+
+  // ---------------------- LEVEL 1 (easy) ----------------------
+  {
+    title: "🍬 The Great Candy Count",
+    description: "Add up Mia's candy from her bucket and her bag, then print the total.",
+    expected: "19",
+    actual: "12",
+    code: [
+      "SET bucketCandy TO 12",
+      "SET bagCandy TO 7",
+      "SET total TO bucketCandy + bagCandy",
+      "PRINT bucketCandy"
+    ],
+    bugLine: 4,
+    options: [
+      "Change line 3 to SET total TO bucketCandy",
+      "Change line 4 to PRINT total",
+      "Change line 4 to PRINT bagCandy",
+      "Change line 1 to SET bucketCandy TO 19"
+    ],
+    correctOption: 1,
+    explanation: "The program correctly adds the candy into 'total' on line 3, but line 4 prints 'bucketCandy' instead of 'total' — so you only see Mia's bucket count, not the combined total.",
+    hint: "Look at what each variable actually holds right before the PRINT line. Which one has the real total?",
+    trace: [
+      { line: 1, vars: { bucketCandy: 12 } },
+      { line: 2, vars: { bucketCandy: 12, bagCandy: 7 } },
+      { line: 3, vars: { bucketCandy: 12, bagCandy: 7, total: 19 } },
+      { line: 4, vars: { bucketCandy: 12, bagCandy: 7, total: 19, prints: "12 (bucketCandy, not total!)" } }
+    ]
+  },
+
+  // ---------------------- LEVEL 2 (easy) ----------------------
+  {
+    title: "🍬 Zoe's Shrinking Stash",
+    description: "Figure out how much candy Zoe has left after she eats 4 pieces.",
+    expected: "11",
+    actual: "19",
+    code: [
+      "SET candy TO 15",
+      "SET candy TO candy + 4",
+      "PRINT candy"
+    ],
+    bugLine: 2,
+    options: [
+      "Change line 1 to SET candy TO 19",
+      "Change line 3 to PRINT candy + 4",
+      "Change line 2 to SET candy TO candy - 4",
+      "Change line 2 to SET candy TO 4 - candy"
+    ],
+    correctOption: 2,
+    explanation: "Eating candy should subtract from the total, but line 2 uses + instead of -, so the program adds 4 pieces instead of removing them.",
+    hint: "Think about whether eating candy should make the number go up or down.",
+    trace: [
+      { line: 1, vars: { candy: 15 } },
+      { line: 2, vars: { candy: 19, note: "15 + 4 = 19 (should be 15 - 4 = 11)" } },
+      { line: 3, vars: { candy: 19, prints: "19" } }
+    ]
+  },
+
+  // ---------------------- LEVEL 3 (medium) ----------------------
+  {
+    title: "🕯️ Counting Candy Drops",
+    description: "Count out loud as Sam drops candy pieces #1 through #10 into the bowl.",
+    expected: "Drops pieces 1 through 10, then \"Finished counting pieces!\"",
+    actual: "Only drops pieces 1 through 9 — piece 10 never gets counted",
+    code: [
+      "SET count TO 1",
+      "REPEAT WHILE count < 10",
+      "    PRINT \"Dropped piece \" + count",
+      "    SET count TO count + 1",
+      "PRINT \"Finished counting pieces!\""
+    ],
+    bugLine: 2,
+    options: [
+      "Change line 1 to SET count TO 2",
+      "Change line 4 to SET count TO count + 2",
+      "Change line 2 to REPEAT WHILE count < 1",
+      "Change line 2 to REPEAT WHILE count <= 10"
+    ],
+    correctOption: 3,
+    explanation: "The loop stops as soon as count reaches 10, but line 2's condition is count < 10, which makes the loop quit right before processing piece #10. Changing it to count <= 10 lets the loop include 10.",
+    hint: "Try tracing count's value each time through the loop — when does it stop, and is that one too early?",
+    trace: [
+      { line: 1, vars: { count: 1 } },
+      { line: 2, vars: { count: 1, check: "1 < 10 → true" } },
+      { line: 4, vars: { count: 2 } },
+      { line: 2, vars: { count: 9, check: "9 < 10 → true" } },
+      { line: 4, vars: { count: 10 } },
+      { line: 2, vars: { count: 10, check: "10 < 10 → FALSE, loop stops" } }
+    ]
+  },
+
+  // ---------------------- LEVEL 4 (medium) ----------------------
+  {
+    title: "🎭 Candy or No Candy?",
+    description: "Give candy to any trick-or-treater whose costume scores 5 or higher.",
+    expected: "\"You get candy!\"",
+    actual: "\"No candy, try a scarier costume!\"",
+    code: [
+      "SET costumeScore TO 5",
+      "IF costumeScore > 5",
+      "    PRINT \"You get candy!\"",
+      "ELSE",
+      "    PRINT \"No candy, try a scarier costume!\""
+    ],
+    bugLine: 2,
+    options: [
+      "Change line 2 to IF costumeScore >= 5",
+      "Change line 2 to IF costumeScore < 5",
+      "Change line 1 to SET costumeScore TO 6",
+      "Change line 3 to PRINT \"No candy, try a scarier costume!\""
+    ],
+    correctOption: 0,
+    explanation: "A costume score of exactly 5 should count as 'high enough,' but > means strictly greater than 5, so a score of exactly 5 gets rejected. Using >= includes 5 itself.",
+    hint: "What happens when the score is exactly 5 — should that count as 'high enough'?",
+    trace: [
+      { line: 1, vars: { costumeScore: 5 } },
+      { line: 2, vars: { costumeScore: 5, check: "5 > 5 → false" } },
+      { line: 5, vars: { costumeScore: 5, prints: "\"No candy...\" (wrong!)" } }
+    ]
+  },
+
+  // ---------------------- LEVEL 5 (medium) ----------------------
+  {
+    title: "🎃 Weighing the Pumpkins",
+    description: "Add up the weights of 4 pumpkins and print the total weight.",
+    expected: "29",
+    actual: "10",
+    code: [
+      "SET weights TO [5, 8, 6, 10]",
+      "FOR EACH weight IN weights",
+      "    SET total TO 0",
+      "    SET total TO total + weight",
+      "PRINT total"
+    ],
+    bugLine: 3,
+    options: [
+      "Change line 4 to SET total TO weight",
+      "Change line 1 to SET weights TO [29]",
+      "Move line 3 (SET total TO 0) so it happens once, before the loop starts",
+      "Change line 5 to PRINT total + weight"
+    ],
+    correctOption: 2,
+    explanation: "Resetting total to 0 inside the loop wipes out everything added so far on every pass, so only the very last pumpkin's weight survives. Setting total to 0 once, before the loop starts, lets it keep adding up.",
+    hint: "Look at line 3 — how many times does it run, and what does it do to 'total' each time?",
+    trace: [
+      { line: 2, vars: { weight: 5 } },
+      { line: 3, vars: { weight: 5, total: 0 } },
+      { line: 4, vars: { weight: 5, total: 5 } },
+      { line: 2, vars: { weight: 8, total: 5 } },
+      { line: 3, vars: { weight: 8, total: 0, note: "reset again!" } },
+      { line: 4, vars: { weight: 8, total: 8 } },
+      { line: 5, vars: { total: 10, prints: "10 (only the last pumpkin survived)" } }
+    ]
+  },
+
+  // ---------------------- LEVEL 6 (medium-hard) ----------------------
+  {
+    title: "😱 Scare-O-Meter",
+    description: "Judge a list of costume scariness scores as Mildly Spooky, Pretty Scary, or TERRIFYING (80+ is TERRIFYING, 50+ is Pretty Scary, otherwise Mildly Spooky).",
+    expected: "TERRIFYING, Pretty Scary, Mildly Spooky, then \"Done judging costumes!\"",
+    actual: "Pretty Scary, Pretty Scary, Mildly Spooky, then \"Done judging costumes!\" (the 90 is judged wrong!)",
+    code: [
+      "SET costumeScores TO [90, 60, 20]",
+      "FOR EACH scariness IN costumeScores",
+      "    IF scariness >= 50",
+      "        PRINT \"Pretty Scary\"",
+      "    ELSE IF scariness >= 80",
+      "        PRINT \"TERRIFYING\"",
+      "    ELSE",
+      "        PRINT \"Mildly Spooky\"",
+      "PRINT \"Done judging costumes!\""
+    ],
+    bugLine: 3,
+    options: [
+      "Change line 3 to IF scariness == 50",
+      "Swap the order: check IF scariness >= 80 first, THEN ELSE IF scariness >= 50",
+      "Change line 1 to SET costumeScores TO [20, 60, 90]",
+      "Change line 9 to PRINT \"Done!\""
+    ],
+    correctOption: 1,
+    explanation: "Since 90 is also >= 50, it matches the FIRST condition and the program stops checking right there — it never gets a chance to see that 90 also qualifies as TERRIFYING. When ranges overlap like this, check the highest (most specific) condition first.",
+    hint: "A score of 90 is also >= 50 — which IF does the program reach first, and does it ever check the others after that?",
+    trace: [
+      { line: 1, vars: { costumeScores: "[90, 60, 20]" } },
+      { line: 2, vars: { scariness: 90 } },
+      { line: 3, vars: { scariness: 90, check: "90 >= 50 → true" } },
+      { line: 4, vars: { scariness: 90, prints: "\"Pretty Scary\" (wrong! should be TERRIFYING)" } }
+    ]
+  },
+
+  // ---------------------- LEVEL 7 (medium-hard) ----------------------
+  {
+    title: "👻 The Ghost's Ten Steps",
+    description: "Move a ghost forward 10 steps, printing each step number, then stop.",
+    expected: "Prints steps 1 through 10, then \"Ghost finished moving after 10 steps!\"",
+    actual: "The program never finishes — step keeps counting DOWN and never passes 10 (infinite loop)",
+    code: [
+      "SET step TO 1",
+      "SET ghostPosition TO 0",
+      "PRINT \"The ghost begins floating...\"",
+      "REPEAT WHILE step <= 10",
+      "    SET ghostPosition TO ghostPosition + 1",
+      "    PRINT \"Ghost moved to step \" + step",
+      "    SET step TO step - 1",
+      "PRINT \"Ghost finished moving after \" + ghostPosition + \" steps!\""
+    ],
+    bugLine: 7,
+    options: [
+      "Change line 4 to REPEAT WHILE step >= 10",
+      "Change line 1 to SET step TO 10",
+      "Change line 7 to SET step TO step - 2",
+      "Change line 7 to SET step TO step + 1"
+    ],
+    correctOption: 3,
+    explanation: "For the loop to eventually stop, 'step' needs to increase toward the limit of 10. Line 7 subtracts 1 each time instead of adding 1, so step moves away from 10 and the condition step <= 10 is always true — the loop runs forever.",
+    hint: "Which direction does 'step' need to move for it to eventually become bigger than 10?",
+    trace: [
+      { line: 1, vars: { step: 1 } },
+      { line: 2, vars: { step: 1, ghostPosition: 0 } },
+      { line: 4, vars: { step: 1, check: "1 <= 10 → true" } },
+      { line: 5, vars: { step: 1, ghostPosition: 1 } },
+      { line: 7, vars: { step: 0, note: "step went DOWN, not up!" } },
+      { line: 4, vars: { step: 0, check: "0 <= 10 → still true" } },
+      { line: 7, vars: { step: -1, note: "...and this keeps happening forever" } }
+    ]
+  },
+
+  // ---------------------- LEVEL 8 (medium-hard) ----------------------
+  {
+    title: "👻 Counting Friendly Ghosts",
+    description: "Count how many trick-or-treaters in the list are wearing a 'friendly ghost' costume.",
+    expected: "2",
+    actual: "1",
+    code: [
+      "FUNCTION countFriendlyGhosts(costumes)",
+      "    SET friendlyCount TO 0",
+      "    FOR EACH costume IN costumes",
+      "        IF costume EQUALS \"friendly ghost\"",
+      "            SET friendlyCount TO friendlyCount + 1",
+      "            RETURN friendlyCount",
+      "    RETURN friendlyCount",
+      "PRINT countFriendlyGhosts([\"witch\", \"friendly ghost\", \"vampire\", \"friendly ghost\", \"mummy\"])"
+    ],
+    bugLine: 6,
+    options: [
+      "Change line 6 to RETURN costumes",
+      "Change line 4 to IF costume EQUALS \"witch\"",
+      "Delete line 6 so the loop finishes checking every costume before returning",
+      "Move line 2 inside the loop"
+    ],
+    correctOption: 2,
+    explanation: "RETURN immediately exits the function — so as soon as the first 'friendly ghost' is found and counted, the function stops and hands back the count so far, skipping the rest of the list. The loop needs to finish checking every costume before returning the final total, which line 7 already does on its own.",
+    hint: "What does RETURN do the moment the program reaches it — does it finish the loop first, or stop right away?",
+    trace: [
+      { line: 2, vars: { friendlyCount: 0 } },
+      { line: 3, vars: { costume: "\"witch\"" } },
+      { line: 4, vars: { costume: "\"witch\"", check: "no match" } },
+      { line: 3, vars: { costume: "\"friendly ghost\"" } },
+      { line: 4, vars: { costume: "\"friendly ghost\"", check: "match!" } },
+      { line: 5, vars: { friendlyCount: 1 } },
+      { line: 6, vars: { friendlyCount: 1, note: "RETURNS now — never checks \"vampire\", \"friendly ghost\", \"mummy\"!" } }
+    ]
+  }
+
+]; // end of LEVELS array
+
+
+/* ======================================================================
+   GAME STATE
+   One object that holds everything that changes while the game is played.
+   ====================================================================== */
+let state = {
+  teamName: "",
+  index: 0,            // which level we're on
+  score: 0,
+  bugsCaught: 0,
+  stage: "find",       // "find" -> "fix" -> "done"
+  lineAttempts: 0,
+  fixAttempts: 0,
+  hintUsed: false,
+  traceUsed: false,
+  timeLeft: 600,       // 10 minutes, in seconds
+  timerId: null
+};
+
+let soundOn = false;
+
+/* ======================================================================
+   SCREEN SWITCHING
+   ====================================================================== */
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+
+/* ======================================================================
+   STARTING A NEW GAME
+   ====================================================================== */
+function startGame(){
+  state.teamName = document.getElementById("teamNameInput").value.trim();
+  state.index = 0;
+  state.score = 0;
+  state.bugsCaught = 0;
+
+  showScreen("gameScreen");
+  buildJarStrip();
+  renderLevel(LEVELS[0]);
+  updateProgress();
+  updateScoreDisplay();
+  startTimer();
+}
+
+function buildJarStrip(){
+  const strip = document.getElementById("jarStrip");
+  let html = "";
+  for(let i = 0; i < LEVELS.length; i++){
+    html += `<span class="jar-slot" id="jarSlot-${i}">🫙</span>`;
+  }
+  strip.innerHTML = html;
+}
+
+function markJarCaught(i){
+  const slot = document.getElementById(`jarSlot-${i}`);
+  slot.textContent = "🐛";
+  slot.classList.add("caught");
+}
+
+/* ======================================================================
+   RENDERING ONE LEVEL
+   ====================================================================== */
+function renderLevel(level){
+  // reset per-level state
+  state.stage = "find";
+  state.lineAttempts = 0;
+  state.fixAttempts = 0;
+  state.hintUsed = false;
+  state.traceUsed = false;
+
+  document.getElementById("levelTitle").textContent = level.title;
+  document.getElementById("levelDescription").textContent = level.description;
+  document.getElementById("expectedOutput").textContent = level.expected;
+  document.getElementById("actualOutput").textContent = level.actual;
+
+  renderCode(level);
+
+  // reset the surrounding UI for a fresh level
+  document.getElementById("hintText").classList.add("hidden");
+  document.getElementById("hintText").textContent = "";
+  document.getElementById("hintBtn").disabled = false;
+  document.getElementById("traceBox").classList.add("hidden");
+  document.getElementById("traceBox").innerHTML = "";
+  document.getElementById("traceBtn").disabled = false;
+  document.getElementById("skipBtn").disabled = false;
+  document.getElementById("findFeedback").classList.add("hidden");
+  document.getElementById("optionsBox").classList.add("hidden");
+  document.getElementById("fixFeedback").classList.add("hidden");
+  document.getElementById("explanationBox").classList.add("hidden");
+  document.getElementById("nextBtn").classList.add("hidden");
+}
+
+function renderCode(level){
+  const block = document.getElementById("codeBlock");
+  block.className = "find-stage";
+  let html = "";
+  level.code.forEach((text, i) => {
+    const lineNum = i + 1;
+    html += `<div class="codeline" data-line="${lineNum}">
+      <span class="ln">${lineNum}</span><span class="code-text">${escapeHTML(text)}</span>
+    </div>`;
+  });
+  block.innerHTML = html;
+
+  block.querySelectorAll(".codeline").forEach(el => {
+    el.addEventListener("click", () => handleLineClick(el));
+  });
+}
+
+// turn plain text into safe HTML (so quotes/brackets in pseudocode show correctly)
+function escapeHTML(text){
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/* ======================================================================
+   STAGE 1: FIND THE BUGGY LINE
+   ====================================================================== */
+function handleLineClick(el){
+  if(state.stage !== "find") return;
+  if(el.dataset.tried) return; // ignore repeat clicks on an already-tried line
+
+  const level = LEVELS[state.index];
+  const lineNum = parseInt(el.dataset.line, 10);
+  state.lineAttempts++;
+
+  if(lineNum === level.bugLine){
+    const pts = state.lineAttempts === 1 ? 10 : (state.lineAttempts === 2 ? 5 : 0);
+    state.score += pts;
+    el.classList.add("line-correct");
+    el.insertAdjacentHTML("beforeend", ` <span class="tag tag-good">✅ Bug found! +${pts}</span>`);
+    playSound("correct");
+    showFindFeedback(true, pts);
+    lockCodeBlock();
+    showFixStage(level);
+  } else {
+    el.dataset.tried = "1";
+    el.classList.add("line-wrong");
+    el.insertAdjacentHTML("beforeend", ' <span class="tag tag-bad">❌ Not this line</span>');
+    playSound("wrong");
+    showFindFeedback(false, 0);
+  }
+  updateScoreDisplay();
+}
+
+function showFindFeedback(correct, pts){
+  const box = document.getElementById("findFeedback");
+  box.classList.remove("hidden", "good", "bad");
+  box.classList.add(correct ? "good" : "bad");
+  box.innerHTML = correct
+    ? `✅ <strong>Found it!</strong> That's the buggy line. (+${pts} points)`
+    : `❌ <strong>Not quite.</strong> That line is fine — try another one!`;
+}
+
+function lockCodeBlock(){
+  document.getElementById("codeBlock").className = "fix-stage";
+}
+
+/* ======================================================================
+   STAGE 2: PICK THE FIX
+   ====================================================================== */
+function showFixStage(level){
+  state.stage = "fix";
+  const box = document.getElementById("optionsBox");
+  const list = document.getElementById("optionsList");
+  box.classList.remove("hidden");
+
+  let html = "";
+  level.options.forEach((text, i) => {
+    html += `<button class="option-btn" data-option="${i}">${escapeHTML(text)}</button>`;
+  });
+  list.innerHTML = html;
+
+  list.querySelectorAll(".option-btn").forEach(btn => {
+    btn.addEventListener("click", () => handleFixClick(btn));
+  });
+}
+
+function handleFixClick(btn){
+  if(state.stage !== "fix") return;
+  if(btn.dataset.tried) return;
+
+  const level = LEVELS[state.index];
+  const idx = parseInt(btn.dataset.option, 10);
+  state.fixAttempts++;
+
+  if(idx === level.correctOption){
+    const pts = state.fixAttempts === 1 ? 10 : 0;
+    state.score += pts;
+    btn.classList.add("opt-correct");
+    btn.insertAdjacentHTML("beforeend", ` <span class="tag tag-good">✅ +${pts}</span>`);
+    playSound("correct");
+    disableAllOptions();
+    showFixFeedback(true, pts);
+    showExplanation(level);
+    catchBug();
+    state.stage = "done";
+    document.getElementById("nextBtn").classList.remove("hidden");
+  } else {
+    btn.dataset.tried = "1";
+    btn.disabled = true;
+    btn.classList.add("opt-wrong");
+    btn.insertAdjacentHTML("beforeend", ' <span class="tag tag-bad">❌</span>');
+    playSound("wrong");
+    showFixFeedback(false, 0);
+  }
+  updateScoreDisplay();
+}
+
+function showFixFeedback(correct, pts){
+  const box = document.getElementById("fixFeedback");
+  box.classList.remove("hidden", "good", "bad");
+  box.classList.add(correct ? "good" : "bad");
+  box.innerHTML = correct
+    ? `✅ <strong>That's the fix!</strong> (+${pts} points)`
+    : `❌ <strong>That's not it.</strong> Try another option.`;
+}
+
+function disableAllOptions(){
+  document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+}
+
+function showExplanation(level){
+  const box = document.getElementById("explanationBox");
+  box.textContent = level.explanation;
+  box.classList.remove("hidden");
+}
+
+function catchBug(){
+  state.bugsCaught++;
+  markJarCaught(state.index);
+}
+
+/* ======================================================================
+   HINT / TRACE IT / SKIP
+   ====================================================================== */
+function useHint(){
+  if(state.hintUsed) return;
+  state.hintUsed = true;
+  state.score -= 3;
+
+  const level = LEVELS[state.index];
+  const hintText = document.getElementById("hintText");
+  hintText.textContent = "💡 Hint: " + level.hint;
+  hintText.classList.remove("hidden");
+  document.getElementById("hintBtn").disabled = true;
+
+  updateScoreDisplay();
+}
+
+function useTrace(){
+  const traceBox = document.getElementById("traceBox");
+
+  if(!state.traceUsed){
+    state.traceUsed = true;
+    state.score -= 3;
+    traceBox.innerHTML = buildTraceTable(LEVELS[state.index].trace);
+    updateScoreDisplay();
+  }
+  traceBox.classList.toggle("hidden");
+}
+
+// builds a simple HTML table from a level's "trace" array
+function buildTraceTable(trace){
+  // collect every variable name used anywhere in this trace, in order
+  const keys = [];
+  trace.forEach(step => {
+    Object.keys(step.vars).forEach(k => {
+      if(!keys.includes(k)) keys.push(k);
+    });
+  });
+
+  let html = "<p><strong>🔍 Step by step:</strong></p><table><tr><th>Line</th>";
+  keys.forEach(k => { html += `<th>${escapeHTML(k)}</th>`; });
+  html += "</tr>";
+
+  trace.forEach(step => {
+    html += `<tr><td>${step.line}</td>`;
+    keys.forEach(k => {
+      const val = step.vars[k];
+      html += `<td>${val === undefined ? "–" : escapeHTML(String(val))}</td>`;
+    });
+    html += "</tr>";
+  });
+
+  html += "</table>";
+  return html;
+}
+
+function skipLevel(){
+  nextLevel();
+}
+
+/* ======================================================================
+   MOVING TO THE NEXT LEVEL / ENDING THE GAME
+   ====================================================================== */
+function nextLevel(){
+  state.index++;
+  if(state.index >= LEVELS.length){
+    endGame("completed");
+  } else {
+    renderLevel(LEVELS[state.index]);
+    updateProgress();
+  }
+}
+
+function updateProgress(){
+  document.getElementById("progressDisplay").textContent = `Level ${state.index + 1} of ${LEVELS.length}`;
+}
+
+function updateScoreDisplay(){
+  document.getElementById("scoreDisplay").textContent = `⭐ Score: ${state.score}`;
+}
+
+/* ======================================================================
+   TIMER (10 minutes, turns orange at 2:00, red at 1:00)
+   ====================================================================== */
+function startTimer(){
+  state.timeLeft = 600;
+  updateTimerDisplay();
+  state.timerId = setInterval(() => {
+    state.timeLeft--;
+    updateTimerDisplay();
+    if(state.timeLeft <= 0){
+      clearInterval(state.timerId);
+      endGame("timeup");
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay(){
+  const m = Math.floor(state.timeLeft / 60).toString().padStart(2, "0");
+  const s = (state.timeLeft % 60).toString().padStart(2, "0");
+  const el = document.getElementById("timerDisplay");
+  el.textContent = `⏳ ${m}:${s}`;
+  el.classList.remove("timer-orange", "timer-red");
+  if(state.timeLeft <= 60) el.classList.add("timer-red");
+  else if(state.timeLeft <= 120) el.classList.add("timer-orange");
+}
+
+/* ======================================================================
+   END SCREEN
+   ====================================================================== */
+function endGame(reason){
+  clearInterval(state.timerId);
+  showScreen("endScreen");
+
+  document.getElementById("endTitle").textContent =
+    reason === "timeup" ? "⏰ Time's Up!" : "🏁 All Levels Complete!";
+  document.getElementById("endTeamName").textContent = state.teamName || "Mystery Team";
+  document.getElementById("endScore").textContent = state.score;
+  document.getElementById("endBugs").textContent = `${state.bugsCaught}/${LEVELS.length}`;
+  document.getElementById("endCode").textContent = SECRET_CODE;
+}
+
+function resetGame(){
+  // simplest, most reliable way to reset everything for the next team
+  location.reload();
+}
+
+/* ======================================================================
+   SOUND EFFECTS (optional, OFF by default, no audio files needed)
+   ====================================================================== */
+function playSound(type){
+  if(!soundOn) return;
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = (type === "correct") ? 880 : 220;
+    gain.gain.value = 0.08;
+    osc.start();
+    setTimeout(() => { osc.stop(); ctx.close(); }, 180);
+  } catch(err){
+    // if the browser blocks audio, just skip the sound silently
+  }
+}
+
+/* ======================================================================
+   FACILITATOR VIEW — press Shift+A to show/hide the answer key
+   ====================================================================== */
+function renderFacilitatorView(){
+  let rows = "";
+  LEVELS.forEach((level, i) => {
+    const buggyLineText = level.code[level.bugLine - 1];
+    const fixText = level.options[level.correctOption];
+    rows += `<tr>
+      <td>${i + 1}</td>
+      <td>${escapeHTML(level.title)}</td>
+      <td>Line ${level.bugLine}: <code>${escapeHTML(buggyLineText)}</code></td>
+      <td>${escapeHTML(fixText)}</td>
+      <td>${escapeHTML(level.explanation)}</td>
+    </tr>`;
+  });
+
+  document.getElementById("facilitatorContent").innerHTML = `
+    <table>
+      <tr><th>#</th><th>Level</th><th>Buggy Line</th><th>Correct Fix</th><th>Explanation</th></tr>
+      ${rows}
+    </table>
+  `;
+}
+
+document.addEventListener("keydown", (e) => {
+  if(e.shiftKey && (e.key === "A" || e.key === "a")){
+    const overlay = document.getElementById("facilitatorOverlay");
+    overlay.classList.toggle("hidden");
+    if(!overlay.classList.contains("hidden")) renderFacilitatorView();
+  }
+});
+
+/* ======================================================================
+   BUTTON WIRING (runs once, since this <script> is at the end of <body>)
+   ====================================================================== */
+document.getElementById("startBtn").addEventListener("click", startGame);
+document.getElementById("hintBtn").addEventListener("click", useHint);
+document.getElementById("traceBtn").addEventListener("click", useTrace);
+document.getElementById("skipBtn").addEventListener("click", skipLevel);
+document.getElementById("nextBtn").addEventListener("click", nextLevel);
+document.getElementById("resetBtn").addEventListener("click", resetGame);
+
+document.getElementById("soundToggle").addEventListener("change", (e) => {
+  soundOn = e.target.checked;
+});
+
+document.getElementById("fullscreenBtn").addEventListener("click", () => {
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen();
+  }
+});
+
+</script>
+</body>
+</html>
