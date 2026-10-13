@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phish or Treat 🎃</title>
+<style>
+  /* ============================================================
+     PHISH OR TREAT — STYLES
+     Dark purple/black/orange Halloween palette.
+     Decorative emoji (bats, cobwebs, pumpkins) are purely visual
+     and have pointer-events:none so they never block clicks.
+     ============================================================ */
+
+  :root{
+    --bg-dark:#140a1f;
+    --bg-darker:#0b0613;
+    --purple:#2e1a47;
+    --purple-light:#4a2d6e;
+    --orange:#ff8c2b;
+    --orange-bright:#ffb347;
+    --red:#ff4d4d;
+    --green:#4ee17c;
+    --text-light:#f3ecff;
+    --text-dim:#c9bbdf;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    min-height:100%;
+    background: radial-gradient(ellipse at top, var(--purple) 0%, var(--bg-dark) 55%, var(--bg-darker) 100%);
+    color: var(--text-light);
+    font-family: Arial, Helvetica, "Segoe UI", sans-serif;
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3{
+    font-family: "Copperplate", "Papyrus", fantasy, cursive, Arial, sans-serif;
+    letter-spacing: 1px;
+    color: var(--orange-bright);
+    text-shadow: 0 0 10px rgba(255,140,43,0.5);
+  }
+
+  .hidden{ display:none !important; }
+
+  /* ---------- decorative background (bats / cobwebs / pumpkins) ---------- */
+  .deco{
+    position: fixed;
+    pointer-events: none;
+    opacity: 0.25;
+    font-size: 2.6rem;
+    z-index: 0;
+    user-select: none;
+  }
+  #deco1{ top: 4%;  left: 3%;  }
+  #deco2{ top: 8%;  right: 4%; font-size: 2rem; }
+  #deco3{ bottom: 6%; left: 5%; }
+  #deco4{ bottom: 10%; right: 6%; font-size: 2.2rem; }
+  #deco5{ top: 45%; left: 1%; font-size: 1.6rem; }
+  #deco6{ top: 60%; right: 2%; font-size: 1.6rem; }
+
+  /* ---------- screens ---------- */
+  .screen{
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+    min-height: 100vh;
+  }
+
+  .card{
+    background: rgba(20, 10, 31, 0.85);
+    border: 2px solid var(--purple-light);
+    border-radius: 16px;
+    padding: 24px 28px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.5);
+  }
+
+  .center{ text-align: center; }
+
+  /* ---------- buttons ---------- */
+  button{
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    transition: transform 0.1s ease, filter 0.15s ease;
+  }
+  button:active{ transform: scale(0.97); }
+  button:disabled{ opacity:0.5; cursor:not-allowed; }
+
+  .btn-primary{
+    background: linear-gradient(135deg, var(--orange), #d9530f);
+    color: #1a0e2a;
+    font-weight: bold;
+  }
+  .btn-primary:hover:not(:disabled){ filter: brightness(1.1); }
+
+  .btn-secondary{
+    background: var(--purple-light);
+    color: var(--text-light);
+  }
+  .btn-secondary:hover:not(:disabled){ filter: brightness(1.2); }
+
+  .btn-big{
+    font-size: 1.3rem;
+    padding: 18px 30px;
+    width: 100%;
+  }
+
+  .answer-row{
+    display:flex;
+    gap: 16px;
+    margin-top: 18px;
+  }
+  .answer-row button{ flex:1; }
+  .btn-phish{ background: linear-gradient(135deg,#ff5d5d,#9c1f1f); color:#fff; font-weight:bold; }
+  .btn-treat{ background: linear-gradient(135deg,#ffd27a,#d98a00); color:#2a1900; font-weight:bold; }
+
+  /* ---------- start screen ---------- */
+  #startScreen h1{ font-size: 2.6rem; margin-bottom: 4px; }
+  #startScreen .subtitle{ color: var(--text-dim); margin-bottom: 20px; }
+  #startScreen input[type="text"]{
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid var(--purple-light);
+    background: var(--bg-darker);
+    color: var(--text-light);
+    margin-bottom: 18px;
+  }
+  .rules-list{ text-align:left; color: var(--text-dim); font-size: 0.95rem; }
+  .rules-list li{ margin-bottom: 6px; }
+
+  .top-toggles{
+    display:flex;
+    justify-content:center;
+    gap: 20px;
+    margin-top: 16px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    flex-wrap: wrap;
+  }
+  .top-toggles label{ cursor:pointer; }
+
+  /* ---------- game screen top bar ---------- */
+  .topbar{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-weight: bold;
+  }
+  #timerDisplay{
+    font-size: 1.4rem;
+    padding: 6px 14px;
+    border-radius: 10px;
+    background: var(--purple);
+    border: 2px solid var(--purple-light);
+  }
+  #timerDisplay.timer-orange{ background:#4a3200; border-color: var(--orange); color: var(--orange-bright); }
+  #timerDisplay.timer-red{ background:#4a0000; border-color: var(--red); color:#ffbcbc; animation: pulseRed 1.4s infinite; }
+  @keyframes pulseRed{ 0%,100%{ opacity:1; } 50%{ opacity:0.65; } }
+
+  #scoreDisplay{ font-size: 1.2rem; }
+  #progressDisplay{ color: var(--text-dim); font-weight: normal; font-size: 0.95rem; }
+
+  .icon-btn{
+    background: var(--purple-light);
+    color: var(--text-light);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.95rem;
+  }
+
+  /* ---------- email client card ---------- */
+  .email-header{
+    border-bottom: 2px dashed var(--purple-light);
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+  }
+  .email-row{ margin: 4px 0; }
+  .email-row.small{ font-size: 0.85rem; color: var(--text-dim); }
+  .label{ color: var(--text-dim); }
+
+  .email-body{
+    font-family: "Trebuchet MS", Verdana, Arial, sans-serif;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #fff5e8;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+
+  .addr{ color: var(--orange-bright); }
+
+  .attachment{
+    display:inline-block;
+    margin-top: 14px;
+    padding: 8px 14px;
+    background: var(--bg-darker);
+    border: 1px dashed var(--text-dim);
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+
+  /* clickable "suspicious" zones, active only during the bonus round */
+  .flagzone{ border-radius: 5px; padding: 0 2px; }
+  #emailCard.bonus-mode .flagzone{
+    cursor: pointer;
+    outline: 2px dotted rgba(255,179,71,0.6);
+  }
+  #emailCard.bonus-mode .flagzone:hover{ background: rgba(255,179,71,0.18); }
+
+  .flag-correct{ background: rgba(78,225,124,0.25); outline: 2px solid var(--green) !important; }
+  .flag-wrong{ background: rgba(255,77,77,0.25); outline: 2px solid var(--red) !important; }
+  .flag-missed{ background: rgba(255,179,71,0.1); outline: 2px dashed var(--orange-bright) !important; }
+
+  .tag{
+    display:inline-block;
+    font-size: 0.75rem;
+    font-weight:bold;
+    padding: 1px 6px;
+    border-radius: 6px;
+    margin-left: 4px;
+    white-space: nowrap;
+  }
+  .tag-good{ background: var(--green); color:#063016; }
+  .tag-bad{ background: var(--red); color:#300606; }
+  .tag-missed{ background: var(--orange-bright); color:#3a2300; }
+
+  /* link status bar — mimics the "real URL" preview in a real email client */
+  #linkStatusBar{
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: var(--bg-darker);
+    border-radius: 8px;
+    font-family: "Courier New", monospace;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    word-break: break-all;
+  }
+  #linkStatusBar.active{ color: var(--orange-bright); }
+
+  .elink{ color:#8fd3ff; text-decoration: underline; cursor: pointer; }
+
+  /* ---------- hint / feedback / bonus ---------- */
+  #hintBtn{ margin-top: 14px; }
+  #hintText{
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(255,179,71,0.12);
+    border-left: 4px solid var(--orange);
+    border-radius: 6px;
+  }
+
+  #feedbackBanner{
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+  }
+  #feedbackBanner.good{ background: rgba(78,225,124,0.18); border: 2px solid var(--green); }
+  #feedbackBanner.bad{ background: rgba(255,77,77,0.18); border: 2px solid var(--red); }
+
+  #explanationBox{
+    margin-top: 10px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    color: var(--text-dim);
+  }
+
+  #bonusBar{
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: rgba(74,45,110,0.4);
+    border: 2px solid var(--purple-light);
+    border-radius: 10px;
+  }
+  #bonusSummary{
+    margin-top: 10px;
+    font-weight: bold;
+    color: var(--orange-bright);
+  }
+
+  #nextBtn{ margin-top: 18px; }
+
+  /* ---------- end screen ---------- */
+  #endScreen h1{ font-size: 2.2rem; }
+  .stat-row{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  .stat-box{
+    background: var(--bg-darker);
+    border: 2px solid var(--purple-light);
+    border-radius: 12px;
+    padding: 14px 20px;
+    min-width: 140px;
+  }
+  .stat-box .big{ font-size: 1.8rem; font-weight:bold; color: var(--orange-bright); }
+  .stat-box .small-label{ color: var(--text-dim); font-size: 0.85rem; }
+
+  .code-box{
+    margin: 20px auto;
+    max-width: 420px;
+    padding: 18px;
+    border: 3px dashed var(--orange);
+    border-radius: 12px;
+    background: rgba(255,140,43,0.08);
+    font-size: 1.6rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: var(--orange-bright);
+  }
+
+  /* ---------- facilitator overlay (Shift+A) ---------- */
+  #facilitatorOverlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(5,2,10,0.95);
+    z-index: 50;
+    overflow-y: auto;
+    padding: 30px;
+  }
+  #facilitatorOverlay table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  #facilitatorOverlay th, #facilitatorOverlay td{
+    border: 1px solid var(--purple-light);
+    padding: 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  #facilitatorOverlay th{ background: var(--purple); color: var(--orange-bright); }
+  .fac-phish{ color: var(--red); font-weight:bold; }
+  .fac-treat{ color: var(--green); font-weight:bold; }
+
+  @media (max-width: 600px){
+    body{ font-size: 16px; }
+    .answer-row{ flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- purely decorative Halloween flair, ignored by screen readers and clicks -->
+  <div class="deco" id="deco1" aria-hidden="true">🦇</div>
+  <div class="deco" id="deco2" aria-hidden="true">🕸️</div>
+  <div class="deco" id="deco3" aria-hidden="true">🎃</div>
+  <div class="deco" id="deco4" aria-hidden="true">👻</div>
+  <div class="deco" id="deco5" aria-hidden="true">🕸️</div>
+  <div class="deco" id="deco6" aria-hidden="true">🦇</div>
+
+  <!-- ===================================================================
+       START SCREEN
+       =================================================================== -->
+  <div class="screen" id="startScreen">
+    <div class="card center">
+      <h1>🎃 Phish or Treat 🍬</h1>
+      <p class="subtitle">A Halloween phishing-detection game — Escape the Bug</p>
+
+      <p style="text-align:left;">You'll see 10 real-looking emails from "Spooky State University" and friends.
+      For each one, your team decides: is it a <strong>Phish 🎣</strong> (a scam) or a <strong>Treat 🍬</strong> (totally legit)?
+      Hover or click links to see where they <em>really</em> go before you answer!</p>
+
+      <label for="teamNameInput" style="display:block; text-align:left; margin-top:14px;">Team name:</label>
+      <input type="text" id="teamNameInput" placeholder="e.g. The Byte Club" maxlength="40">
+
+      <ul class="rules-list">
+        <li>✅ <strong>+10 points</strong> for correctly guessing Phish or Treat</li>
+        <li>🚩 <strong>+5 points</strong> for each real red flag you find on a phishing email (bonus round)</li>
+        <li>⚠️ <strong>−3 points</strong> if you flag something that isn't actually suspicious</li>
+        <li>💡 <strong>−3 points</strong> if you use the one hint allowed per email</li>
+        <li>⏳ You have <strong>10 minutes</strong> for all 10 emails — the timer turns orange, then red!</li>
+      </ul>
+
+      <button class="btn-primary btn-big" id="startBtn">Start Game ▶</button>
+
+      <div class="top-toggles">
+        <label><input type="checkbox" id="soundToggle"> 🔈 Sound effects (off by default)</label>
+        <button class="icon-btn" id="fullscreenBtn" type="button">⛶ Fullscreen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       GAME SCREEN
+       =================================================================== -->
+  <div class="screen hidden" id="gameScreen">
+    <div class="topbar">
+      <div id="timerDisplay">⏳ 10:00</div>
+      <div id="progressDisplay">Email 1 of 10</div>
+      <div id="scoreDisplay">⭐ Score: 0</div>
+    </div>
+
+    <div class="card">
+      <div id="emailCard"><!-- email header/body/attachment get rendered here by JS --></div>
+      <div id="linkStatusBar">🔗 Hover or tap a link to preview where it really goes.</div>
+
+      <button class="btn-secondary" id="hintBtn">💡 Use Hint (−3 pts)</button>
+      <div id="hintText" class="hidden"></div>
+
+      <div class="answer-row" id="answerButtons">
+        <button class="btn-phish" id="phishBtn">🎣 Phish (scam)</button>
+        <button class="btn-treat" id="treatBtn">🍬 Treat (legit)</button>
+      </div>
+
+      <div id="feedbackBanner" class="hidden"></div>
+      <div id="explanationBox" class="hidden"></div>
+
+      <div id="bonusBar" class="hidden">
+        <strong>🔎 Bonus round!</strong> Click the parts of the email your team thinks are suspicious (the sender, a link, a phrase, an attachment...).
+        <br><button class="btn-primary" id="finishBonusBtn" style="margin-top:10px;">Finish Flagging ✅</button>
+        <div id="bonusSummary" class="hidden"></div>
+      </div>
+
+      <button class="btn-primary btn-big hidden" id="nextBtn">Next Email ➡</button>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       END SCREEN
+       =================================================================== -->
+  <div class="screen hidden" id="endScreen">
+    <div class="card center">
+      <h1 id="endTitle">🏁 All Emails Complete!</h1>
+      <p>Great work, <strong id="endTeamName">Mystery Team</strong>!</p>
+
+      <div class="stat-row">
+        <div class="stat-box"><div class="big" id="endScore">0</div><div class="small-label">Final Score</div></div>
+        <div class="stat-box"><div class="big" id="endAccuracy">0%</div><div class="small-label">Accuracy</div></div>
+        <div class="stat-box"><div class="big" id="endFlags">0/0</div><div class="small-label">Red Flags Found</div></div>
+      </div>
+
+      <p>🔑 Your secret escape code — write this down!</p>
+      <div class="code-box" id="endCode">------</div>
+
+      <button class="btn-primary btn-big" id="resetBtn">🔁 Reset for Next Team</button>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       FACILITATOR OVERLAY — press Shift+A to toggle, any screen
+       =================================================================== -->
+  <div id="facilitatorOverlay" class="hidden">
+    <h2>🧑‍🏫 Facilitator Answer Key <span style="font-size:0.9rem; color:var(--text-dim);">(press Shift+A to close)</span></h2>
+    <div id="facilitatorContent"></div>
+  </div>
+
+
+<script>
+/* ======================================================================
+   PHISH OR TREAT — GAME SCRIPT
+   Written to be easy for beginner JavaScript club members to read & edit.
+
+   HOW TO EDIT THE EMAILS:
+   Scroll down to the big "EMAILS" array below. Each email is one object
+   in { } curly braces. Copy an existing one and change the text to make
+   a new email, or edit the text in place to change an existing one.
+   ====================================================================== */
+
+// The word teams write down at the end. Change this any time.
+const SECRET_CODE = "PUMPKIN-FIREWALL-13";
+
+/* ----------------------------------------------------------------------
+   EMAILS ARRAY
+   Each email object looks like this:
+
+   {
+     difficulty:  "easy" | "medium" | "hard"   (just for your reference)
+     isPhish:     true or false  -> true = this is a scam
+     from:        { name: "...", email: "..." }
+     replyTo:     optional extra "Reply-To:" address shown under the sender
+     subject:     the subject line
+     time:        optional little timestamp line, e.g. "Today, 9:14 AM"
+     bodyHTML:    the email text. You can use <br><br> for line breaks.
+                  Suspicious words/links are wrapped like this:
+                  <span class="flagzone elink" data-flag="link1"
+                        data-real="http://the-real-shady-url.example">
+                        text the user sees</span>
+                  - "elink" = this is a link; hovering shows the real URL.
+                  - "flagzone" = this is clickable in the bonus round.
+                  - data-flag must match an id in this email's "zones" list.
+     attachment:  optional { name, icon, flagId } for a fake attachment chip
+     zones:       ONLY for phishing emails. A list of every clickable
+                  "suspicious part" in this email:
+                  { id: "sender", label: "...", isFlag: true }
+                  isFlag true  = this really IS a red flag (+5 if clicked)
+                  isFlag false = a decoy. It looks clickable but it is NOT
+                                 actually suspicious (−3 if clicked).
+     explanation: shown after the team answers (2-3 plain-language sentences)
+     hint:        a nudge, shown if the team spends 3 points on a hint
+   }
+---------------------------------------------------------------------- */
+const EMAILS = [
+
+  // ---------------------- EMAIL 1 (easy, PHISH) ----------------------
+  {
+    difficulty: "easy",
+    isPhish: true,
+    from: { name: "Spooky State IT Security", email: "alerts@spookystate-security.com" },
+    subject: "URGENT!!! Your Account Will Be SUSPENDED Today",
+    time: "Today, 7:58 AM",
+    bodyHTML: `Dear Student,<br><br>
+      Our system detected unusual activity on your account. If you do not
+      <span class="flagzone elink" data-flag="link1" data-real="http://spookystate-secure-login.verify-account.net/reset">verify your password immediately</span>,
+      your account will be
+      <span class="flagzone" data-flag="urgent1">permanently suspended within 24 hours</span>.<br><br>
+      Please <span class="flagzone" data-flag="creds1">confirm your Spooky State username and password</span> using the link above
+      to avoid losing access to your email, grades, and financial aid information.
+      A copy of the verification form is attached for your records.<br><br>
+      Thank you,<br>IT Security Team`,
+    attachment: { name: "Account_Verification_Form.pdf.exe", icon: "📎", flagId: "attach1" },
+    zones: [
+      { id: "sender", label: "Sender domain isn't spookystate.edu", isFlag: true },
+      { id: "link1", label: "Link demands you 'verify' your password", isFlag: true },
+      { id: "urgent1", label: "False urgency / threat", isFlag: true },
+      { id: "creds1", label: "Direct request for your password", isFlag: true },
+      { id: "attach1", label: "Fake attachment ending in .pdf.exe", isFlag: true }
+    ],
+    explanation: "This is phishing: the sender's domain isn't spookystate.edu, the message creates false urgency, and real IT staff never ask you to type your password into an email. The attachment's double ending (.pdf.exe) is also a classic trick to hide a program as a document.",
+    hint: "Look closely at the sender's email address — is it really spookystate.edu?"
+  },
+
+  // ---------------------- EMAIL 2 (easy, TREAT) ----------------------
+  {
+    difficulty: "easy",
+    isPhish: false,
+    from: { name: "Spooky State Dining Services", email: "dining@spookystate.edu" },
+    subject: "👻 Extended Hours This Week for Howl-o-ween Snack Attack",
+    time: "Yesterday, 2:10 PM",
+    bodyHTML: `Hi everyone,<br><br>
+      To celebrate Howl-o-ween Week, the Crypt Café and Boo-fet will stay open until midnight
+      Thursday and Friday! Stop by for free candy corn with any meal swipe.<br><br>
+      Full hours are posted at
+      <span class="elink" data-real="http://dining.spookystate.edu/hours">dining.spookystate.edu/hours</span>.<br><br>
+      Happy Halloween!<br>Spooky State Dining Services`,
+    explanation: "This is legitimate: it's sent from the real spookystate.edu domain, it doesn't ask for any personal information or passwords, and the link points to the university's own dining website.",
+    hint: "Check the sender's domain and whether the email asks for anything personal."
+  },
+
+  // ---------------------- EMAIL 3 (easy, PHISH) ----------------------
+  {
+    difficulty: "easy",
+    isPhish: true,
+    from: { name: "Campus Rewards Committee", email: "prizes@lucky-campus-rewards.net" },
+    subject: "🎉🎉 CONGRATULATIONS!! You Won a $500 Gift Card!!! 🎉🎉",
+    time: "Today, 6:40 AM",
+    bodyHTML: `Dear Winner,<br><br>
+      You have been <span class="flagzone" data-flag="toogood">randomly selected to receive a $500 Visa Gift Card</span>!
+      This offer expires in <span class="flagzone" data-flag="urgent2">2 HOURS, so act now</span>!<br><br>
+      To claim your prize,
+      <span class="flagzone elink" data-flag="link2" data-real="http://claim-your-prize-now.ru/spookystate">click here to confirm your shipping address and pay a small $4.99 processing fee</span>.<br><br>
+      Don't miss out!<br>Campus Rewards Committee`,
+    zones: [
+      { id: "sender", label: "Random, unrelated domain", isFlag: true },
+      { id: "toogood", label: "Too good to be true — a prize you never entered", isFlag: true },
+      { id: "urgent2", label: "Fake 2-hour deadline", isFlag: true },
+      { id: "link2", label: "Asks you to pay a 'fee' to receive a prize", isFlag: true }
+    ],
+    explanation: "This is a classic prize scam: you can't win a contest you never entered, the domain is unrelated to the university, and real prizes never require you to pay a 'processing fee' first.",
+    hint: "Did your team enter a contest recently? And why would winning something cost money?"
+  },
+
+  // ---------------------- EMAIL 4 (medium, PHISH) ----------------------
+  {
+    difficulty: "medium",
+    isPhish: true,
+    from: { name: "Spooky State Password Portal", email: "support@rnyspookystate.edu" },
+    subject: "Action Required: Your Password Expires Today",
+    time: "Today, 8:15 AM",
+    bodyHTML: `Hello,<br><br>
+      Your campus password is set to expire today. To keep access to your email, course portal,
+      and financial aid account, please
+      <span class="flagzone elink" data-flag="link3" data-real="http://rnyspookystate.edu/reset-password?id=88213">reset your password here</span>
+      before midnight.<br><br>
+      If you do not reset it, you may be
+      <span class="flagzone" data-flag="urgent3">locked out of all university systems</span>.<br><br>
+      IT Help Desk`,
+    zones: [
+      { id: "sender", label: "Look-alike domain: 'rnyspookystate.edu' uses 'rn' to mimic 'myspookystate.edu'", isFlag: true },
+      { id: "link3", label: "Password reset link goes to the fake look-alike domain", isFlag: true },
+      { id: "urgent3", label: "Threat of being locked out", isFlag: true }
+    ],
+    explanation: "Look closely: the sender's domain is 'rnyspookystate.edu' — the letters 'rn' are standing in for an 'm' to mimic 'myspookystate.edu'. This look-alike domain trick is common in phishing. Always type my.spookystate.edu directly instead of clicking email links for password resets.",
+    hint: "Zoom in on the sender's domain name letter by letter — do 'r' and 'n' together look like another letter?"
+  },
+
+  // ---------------------- EMAIL 5 (medium, PHISH) ----------------------
+  {
+    difficulty: "medium",
+    isPhish: true,
+    from: { name: "GhostPost Shipping", email: "notifications@ghostpost-shipping.com" },
+    subject: "Delivery Attempted: Package Requires Action",
+    time: "Today, 11:02 AM",
+    bodyHTML: `Hi there,<br><br>
+      We attempted to deliver your package today but no one was available. Your package is being
+      held at our facility.<br><br>
+      Please
+      <span class="flagzone elink" data-flag="link4" data-real="http://ghostp0st-track.info/confirm?track=445102">track your package at ghostpost-shipping.com/track</span>
+      and confirm your delivery address within 48 hours, including a
+      <span class="flagzone" data-flag="fee1">small $2.50 redelivery fee</span>,
+      or it will be returned to sender. See the attached invoice for details.<br><br>
+      GhostPost Shipping Support`,
+    attachment: { name: "Delivery_Invoice.zip", icon: "📎", flagId: "attach2" },
+    zones: [
+      { id: "sender", label: "Sender address actually looks fairly normal here", isFlag: false },
+      { id: "link4", label: "Link text doesn't match where it really goes", isFlag: true },
+      { id: "fee1", label: "Real carriers don't charge a 'redelivery fee' by email link", isFlag: true },
+      { id: "attach2", label: "Unexpected zip attachment", isFlag: true }
+    ],
+    explanation: "The link text shown doesn't match where it actually goes — hover over any link to see its real destination before clicking. Real shipping carriers also don't charge a 'redelivery fee' through an email link. Notice the sender address here actually looks fairly normal, which shows you need to check more than just the sender.",
+    hint: "Try hovering over the tracking link — does the status bar match what the link text says?"
+  },
+
+  // ---------------------- EMAIL 6 (medium, TREAT) ----------------------
+  {
+    difficulty: "medium",
+    isPhish: false,
+    from: { name: "Spooky State Office of Financial Aid", email: "finaid@spookystate.edu" },
+    subject: "Action Needed: Confirm Your Fall Enrollment by Friday",
+    time: "Today, 9:30 AM",
+    bodyHTML: `Dear Student,<br><br>
+      Our records show you have not yet confirmed your fall enrollment status, which is required
+      to finalize your financial aid disbursement. Please log in to
+      <span class="elink" data-real="http://my.spookystate.edu/finaid">my.spookystate.edu/finaid</span>
+      and confirm your enrollment by this Friday at 5 PM.<br><br>
+      If you have already confirmed, no further action is needed. Questions? Reply to this email
+      or call our office at (555) 019-2231.<br><br>
+      Office of Financial Aid<br>Spooky State University`,
+    explanation: "This looks urgent, but it's legitimate: it's from the real finaid@spookystate.edu address, the link goes to the real my.spookystate.edu portal, and it offers a normal way to ask questions (replying or calling a listed number) instead of just a link. Legitimate emails can still sound time-sensitive!",
+    hint: "Check where the link actually points, and whether the sender's domain matches the real university."
+  },
+
+  // ---------------------- EMAIL 7 (medium, TREAT) ----------------------
+  {
+    difficulty: "medium",
+    isPhish: false,
+    from: { name: "Nightshade — GWC Club President", email: "gwc-club@spookystate.edu" },
+    subject: "Girls Who Code Social This Friday 🎃 — Bring a Friend!",
+    time: "Today, 1:05 PM",
+    bodyHTML: `Hey everyone!<br><br>
+      Quick reminder that our Halloween social is this Friday at 6 PM in the Hawthorne Hall lounge.
+      We'll have pumpkin carving, hot cider, and a quick demo from the Cybersecurity Club.<br><br>
+      RSVP isn't required, but it helps us plan snacks — reply to this email or fill out the short
+      form at
+      <span class="elink" data-real="http://forms.spookystate.edu/gwc-social-rsvp">forms.spookystate.edu/gwc-social-rsvp</span>.<br><br>
+      See you there!<br>Nightshade`,
+    explanation: "Totally legit — a casual, low-pressure email from a real campus organization, sent from the real spookystate.edu domain, with no requests for personal info or passwords, and a link to the university's own forms site.",
+    hint: "Does this email ask you to do anything unusual, or just share normal club info?"
+  },
+
+  // ---------------------- EMAIL 8 (medium-hard, PHISH) ----------------------
+  {
+    difficulty: "hard",
+    isPhish: true,
+    from: { name: "Dr. E. Ravensworth", email: "e.ravensworth@spookystate.edu" },
+    replyTo: "ravensworth.cs@quickmail-relay.net",
+    subject: "Quick favor before my flight — Dr. Ravensworth",
+    time: "Today, 7:03 AM",
+    bodyHTML: `Hi,<br><br>
+      I'm about to board a flight and can't make calls right now. I need a favor — can you
+      <span class="flagzone" data-flag="giftcard1">pick up five $50 eBay gift cards for a department raffle prize and email me the card codes</span>?
+      I'll reimburse you as soon as I land, I promise.<br><br>
+      Please <span class="flagzone" data-flag="secrecy1">keep this between us for now</span>, I want it to be a surprise for the raffle.
+      Let me know once you've got them!<br><br>
+      Thanks so much,<br>Dr. Ravensworth<br>Dept. of Computer Science`,
+    zones: [
+      { id: "sender", label: "The visible 'From' address actually looks like a real spookystate.edu address", isFlag: false },
+      { id: "replyto", label: "Reply-To address doesn't match any real university address", isFlag: true },
+      { id: "giftcard1", label: "Classic gift-card scam request", isFlag: true },
+      { id: "secrecy1", label: "Pressure to keep it secret", isFlag: true }
+    ],
+    explanation: "This mimics a real professor but is a classic gift-card scam (a type of 'business email compromise'): it asks you to buy gift cards and send the codes, pressures secrecy, and uses a Reply-To address that doesn't match any real spookystate.edu address. Real professors won't ask you to buy gift cards over email.",
+    hint: "Check the small 'Reply-To' line under the sender's name — does it match a real university address?"
+  },
+
+  // ---------------------- EMAIL 9 (medium-hard, PHISH) ----------------------
+  {
+    difficulty: "hard",
+    isPhish: true,
+    from: { name: "SpookyDrive Notifications", email: "no-reply@spookydrive-share.com" },
+    subject: "'Fall Internship List 2026' has been shared with you",
+    time: "Today, 10:48 AM",
+    bodyHTML: `Hello,<br><br>
+      Priya Chen (p.chen@spookystate.edu) has shared a document with you:
+      <strong>Fall Internship List 2026</strong>.<br><br>
+      <span class="flagzone elink" data-flag="link5" data-real="http://spookydrive-share.com/login?return=doc884">Open Document</span><br><br>
+      You may need to <span class="flagzone" data-flag="credreq">sign in with your campus email and password</span> to view this file.<br><br>
+      — SpookyDrive`,
+    zones: [
+      { id: "sender", label: "'SpookyDrive' isn't a real service the campus uses", isFlag: true },
+      { id: "link5", label: "'Open Document' link goes to a non-university login page", isFlag: true },
+      { id: "credreq", label: "Asks you to enter your real campus password on an outside site", isFlag: true }
+    ],
+    explanation: "This fakes a shared-document notification to steal your campus login. The service name 'SpookyDrive' isn't one your school actually uses, the link goes to a non-university domain, and it asks you to enter your real campus password on that outside site — a common credential-phishing trick.",
+    hint: "Does your school actually use a document-sharing service called 'SpookyDrive'?"
+  },
+
+  // ---------------------- EMAIL 10 (medium-hard, TREAT) ----------------------
+  {
+    difficulty: "hard",
+    isPhish: false,
+    from: { name: "Spooky State Career Center", email: "careers@spookystate.edu" },
+    subject: "You're Invited: Fall Internship & Career Fair — RSVP Today",
+    time: "Today, 12:20 PM",
+    bodyHTML: `Hi there,<br><br>
+      The Fall Internship & Career Fair is happening next Wednesday from 11 AM-3 PM in the
+      Gallows Hall Ballroom. Over 40 employers will be attending, including local tech companies,
+      nonprofits, and government agencies.<br><br>
+      Bring copies of your resume and dress business casual. You can view the full list of
+      attending employers and RSVP at
+      <span class="elink" data-real="http://careers.spookystate.edu/fall-fair-2026">careers.spookystate.edu/fall-fair-2026</span>.<br><br>
+      See you there!<br>Spooky State Career Center`,
+    explanation: "This one's legitimate: a real spookystate.edu sender address, a link that goes to the matching careers.spookystate.edu subdomain, and ordinary event details with no request for passwords or payments.",
+    hint: "Hover over the link — does the real destination match the university's actual domain?"
+  }
+
+]; // end of EMAILS array
+
+
+/* ======================================================================
+   GAME STATE
+   One object that holds everything that changes while the game is played.
+   ====================================================================== */
+let state = {
+  teamName: "",
+  index: 0,            // which email we're on
+  score: 0,
+  correctCount: 0,
+  totalAnswered: 0,
+  flagsFoundTotal: 0,  // across the whole game
+  flagsFoundThisEmail: 0,
+  answered: false,
+  hintUsed: false,
+  mode: "investigate",  // "investigate" -> "bonus" -> "review"
+  timeLeft: 600,         // 10 minutes, in seconds
+  timerId: null
+};
+
+let soundOn = false;
+
+/* ======================================================================
+   SCREEN SWITCHING
+   ====================================================================== */
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+
+/* ======================================================================
+   STARTING A NEW GAME
+   ====================================================================== */
+function startGame(){
+  state.teamName = document.getElementById("teamNameInput").value.trim();
+  state.index = 0;
+  state.score = 0;
+  state.correctCount = 0;
+  state.totalAnswered = 0;
+  state.flagsFoundTotal = 0;
+
+  showScreen("gameScreen");
+  renderEmail(EMAILS[0]);
+  updateProgress();
+  updateScoreDisplay();
+  startTimer();
+}
+
+/* ======================================================================
+   RENDERING ONE EMAIL
+   ====================================================================== */
+function renderEmail(email){
+  // reset per-email state
+  state.answered = false;
+  state.hintUsed = false;
+  state.mode = "investigate";
+  state.flagsFoundThisEmail = 0;
+
+  // the sender address is only a clickable "flagzone" on phishing emails
+  const senderZoneDef = email.isPhish && email.zones ? email.zones.find(z => z.id === "sender") : null;
+  const senderClass = senderZoneDef ? "addr flagzone" : "addr";
+  const senderAttr = senderZoneDef ? 'data-flag="sender"' : "";
+
+  let html = `
+    <div class="email-header">
+      <div class="email-row"><span class="label">From:</span> <strong>${email.from.name}</strong> &lt;<span class="${senderClass}" ${senderAttr}>${email.from.email}</span>&gt;</div>
+      ${email.replyTo ? `<div class="email-row small">Reply-To: <span class="addr flagzone" data-flag="replyto">${email.replyTo}</span></div>` : ""}
+      <div class="email-row"><span class="label">Subject:</span> <strong>${email.subject}</strong></div>
+      <div class="email-row small">${email.time || "Today"}</div>
+    </div>
+    <div class="email-body">${email.bodyHTML}</div>
+  `;
+
+  if(email.attachment){
+    const att = email.attachment;
+    html += `<div class="attachment flagzone" data-flag="${att.flagId}">${att.icon} ${att.name}</div>`;
+  }
+
+  document.getElementById("emailCard").innerHTML = html;
+  document.getElementById("emailCard").classList.remove("bonus-mode");
+
+  // reset the link-preview status bar
+  document.getElementById("linkStatusBar").textContent = "🔗 Hover or tap a link to preview where it really goes.";
+  document.getElementById("linkStatusBar").classList.remove("active");
+
+  attachEmailHandlers();
+
+  // reset the surrounding UI for a fresh email
+  document.getElementById("answerButtons").classList.remove("hidden");
+  document.getElementById("explanationBox").classList.add("hidden");
+  document.getElementById("hintText").classList.add("hidden");
+  document.getElementById("hintBtn").disabled = false;
+  document.getElementById("bonusBar").classList.add("hidden");
+  document.getElementById("bonusSummary").classList.add("hidden");
+  document.getElementById("nextBtn").classList.add("hidden");
+  document.getElementById("feedbackBanner").classList.add("hidden");
+}
+
+// hook up hover/click behavior for links and flag-zones inside the current email
+function attachEmailHandlers(){
+  const card = document.getElementById("emailCard");
+
+  // any link: hovering (or tapping) reveals its real destination, like a real email client
+  card.querySelectorAll(".elink").forEach(el => {
+    el.addEventListener("mouseenter", () => showLinkPreview(el.dataset.real));
+    el.addEventListener("mouseleave", () => showLinkPreview(null));
+    el.addEventListener("click", () => {
+      showLinkPreview(el.dataset.real);
+      maybeScoreZone(el);
+    });
+  });
+
+  // any other suspicious zone (sender, phrase, attachment) only matters in the bonus round
+  card.querySelectorAll(".flagzone:not(.elink)").forEach(el => {
+    el.addEventListener("click", () => maybeScoreZone(el));
+  });
+}
+
+function showLinkPreview(url){
+  const bar = document.getElementById("linkStatusBar");
+  if(url){
+    bar.textContent = "🔗 Real destination: " + url;
+    bar.classList.add("active");
+  } else {
+    bar.textContent = "🔗 Hover or tap a link to preview where it really goes.";
+    bar.classList.remove("active");
+  }
+}
+
+function maybeScoreZone(el){
+  if(state.mode === "bonus") handleZoneClick(el);
+}
+
+/* ======================================================================
+   MAIN ANSWER: PHISH OR TREAT
+   ====================================================================== */
+function chooseAnswer(choice){
+  if(state.answered) return;
+  state.answered = true;
+
+  const email = EMAILS[state.index];
+  const correct = (choice === "phish") === email.isPhish;
+
+  state.totalAnswered++;
+  if(correct){
+    state.score += 10;
+    state.correctCount++;
+  }
+  playSound(correct ? "correct" : "wrong");
+
+  showFeedback(correct, email.isPhish);
+
+  document.getElementById("answerButtons").classList.add("hidden");
+  document.getElementById("hintBtn").disabled = true;
+  const explBox = document.getElementById("explanationBox");
+  explBox.textContent = email.explanation;
+  explBox.classList.remove("hidden");
+
+  if(email.isPhish){
+    startBonusRound();
+  } else {
+    showNextButton();
+  }
+
+  updateScoreDisplay();
+}
+
+function showFeedback(correct, isPhish){
+  const banner = document.getElementById("feedbackBanner");
+  banner.classList.remove("hidden", "good", "bad");
+  banner.classList.add(correct ? "good" : "bad");
+  const answerWord = isPhish ? "Phish 🎣" : "Treat 🍬";
+  banner.innerHTML = correct
+    ? `✅ <strong>Correct!</strong> This was a ${answerWord}. (+10 points)`
+    : `❌ <strong>Not quite.</strong> This was actually a ${answerWord}.`;
+}
+
+/* ======================================================================
+   BONUS ROUND: FIND THE RED FLAGS (phishing emails only)
+   ====================================================================== */
+function startBonusRound(){
+  state.mode = "bonus";
+  document.getElementById("emailCard").classList.add("bonus-mode");
+  document.getElementById("bonusBar").classList.remove("hidden");
+  document.getElementById("bonusSummary").classList.add("hidden");
+}
+
+function handleZoneClick(el){
+  if(el.dataset.processed) return; // already clicked once, ignore repeats
+
+  const id = el.dataset.flag;
+  const email = EMAILS[state.index];
+  const zoneDef = email.zones && email.zones.find(z => z.id === id);
+  if(!zoneDef) return;
+
+  el.dataset.processed = "1";
+
+  if(zoneDef.isFlag){
+    state.score += 5;
+    state.flagsFoundThisEmail++;
+    state.flagsFoundTotal++;
+    el.classList.add("flag-correct");
+    el.insertAdjacentHTML("beforeend", ' <span class="tag tag-good">✅ Red flag! +5</span>');
+  } else {
+    state.score -= 3;
+    el.classList.add("flag-wrong");
+    el.insertAdjacentHTML("beforeend", ' <span class="tag tag-bad">⚠️ Not suspicious −3</span>');
+  }
+  updateScoreDisplay();
+}
+
+function finishBonus(){
+  const email = EMAILS[state.index];
+
+  // reveal any real red flags the team missed
+  document.querySelectorAll("#emailCard .flagzone").forEach(el => {
+    if(!el.dataset.processed){
+      const zoneDef = email.zones.find(z => z.id === el.dataset.flag);
+      if(zoneDef && zoneDef.isFlag){
+        el.classList.add("flag-missed");
+        el.insertAdjacentHTML("beforeend", ' <span class="tag tag-missed">❌ Missed red flag</span>');
+      }
+    }
+  });
+
+  state.mode = "review";
+  document.getElementById("emailCard").classList.remove("bonus-mode");
+
+  const totalFlags = email.zones.filter(z => z.isFlag).length;
+  const summary = document.getElementById("bonusSummary");
+  summary.textContent = `You found ${state.flagsFoundThisEmail} of ${totalFlags} red flags in this email.`;
+  summary.classList.remove("hidden");
+
+  showNextButton();
+}
+
+/* ======================================================================
+   HINTS
+   ====================================================================== */
+function useHint(){
+  if(state.hintUsed || state.answered) return;
+  state.hintUsed = true;
+  state.score -= 3;
+
+  const email = EMAILS[state.index];
+  const hintText = document.getElementById("hintText");
+  hintText.textContent = "💡 Hint: " + email.hint;
+  hintText.classList.remove("hidden");
+  document.getElementById("hintBtn").disabled = true;
+
+  updateScoreDisplay();
+}
+
+/* ======================================================================
+   MOVING TO THE NEXT EMAIL / ENDING THE GAME
+   ====================================================================== */
+function showNextButton(){
+  document.getElementById("nextBtn").classList.remove("hidden");
+}
+
+function nextEmail(){
+  state.index++;
+  if(state.index >= EMAILS.length){
+    endGame("completed");
+  } else {
+    renderEmail(EMAILS[state.index]);
+    updateProgress();
+  }
+}
+
+function updateProgress(){
+  document.getElementById("progressDisplay").textContent = `Email ${state.index + 1} of ${EMAILS.length}`;
+}
+
+function updateScoreDisplay(){
+  document.getElementById("scoreDisplay").textContent = `⭐ Score: ${state.score}`;
+}
+
+/* ======================================================================
+   TIMER (10 minutes, turns orange at 2:00, red at 1:00)
+   ====================================================================== */
+function startTimer(){
+  state.timeLeft = 600;
+  updateTimerDisplay();
+  state.timerId = setInterval(() => {
+    state.timeLeft--;
+    updateTimerDisplay();
+    if(state.timeLeft <= 0){
+      clearInterval(state.timerId);
+      endGame("timeup");
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay(){
+  const m = Math.floor(state.timeLeft / 60).toString().padStart(2, "0");
+  const s = (state.timeLeft % 60).toString().padStart(2, "0");
+  const el = document.getElementById("timerDisplay");
+  el.textContent = `⏳ ${m}:${s}`;
+  el.classList.remove("timer-orange", "timer-red");
+  if(state.timeLeft <= 60) el.classList.add("timer-red");
+  else if(state.timeLeft <= 120) el.classList.add("timer-orange");
+}
+
+/* ======================================================================
+   END SCREEN
+   ====================================================================== */
+function endGame(reason){
+  clearInterval(state.timerId);
+  state.mode = "ended";
+  showScreen("endScreen");
+
+  const totalFlags = EMAILS
+    .filter(e => e.isPhish)
+    .reduce((sum, e) => sum + e.zones.filter(z => z.isFlag).length, 0);
+
+  document.getElementById("endTitle").textContent =
+    reason === "timeup" ? "⏰ Time's Up!" : "🏁 All Emails Complete!";
+  document.getElementById("endTeamName").textContent = state.teamName || "Mystery Team";
+  document.getElementById("endScore").textContent = state.score;
+
+  const acc = state.totalAnswered ? Math.round((state.correctCount / state.totalAnswered) * 100) : 0;
+  document.getElementById("endAccuracy").textContent = `${acc}% (${state.correctCount}/${state.totalAnswered})`;
+  document.getElementById("endFlags").textContent = `${state.flagsFoundTotal}/${totalFlags}`;
+  document.getElementById("endCode").textContent = SECRET_CODE;
+}
+
+function resetGame(){
+  // simplest, most reliable way to reset everything for the next team
+  location.reload();
+}
+
+/* ======================================================================
+   SOUND EFFECTS (optional, OFF by default, no audio files needed)
+   ====================================================================== */
+function playSound(type){
+  if(!soundOn) return;
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = (type === "correct") ? 880 : 220;
+    gain.gain.value = 0.08;
+    osc.start();
+    setTimeout(() => { osc.stop(); ctx.close(); }, 180);
+  } catch(err){
+    // if the browser blocks audio, just skip the sound silently
+  }
+}
+
+/* ======================================================================
+   FACILITATOR VIEW — press Shift+A to show/hide the answer key
+   ====================================================================== */
+function renderFacilitatorView(){
+  let rows = "";
+  EMAILS.forEach((email, i) => {
+    const answer = email.isPhish ? `<span class="fac-phish">PHISH 🎣</span>` : `<span class="fac-treat">TREAT 🍬</span>`;
+    const flags = email.isPhish
+      ? email.zones.filter(z => z.isFlag).map(z => z.label).join("; ")
+      : "—";
+    rows += `<tr>
+      <td>${i + 1}</td>
+      <td>${email.subject}</td>
+      <td>${email.from.email}</td>
+      <td>${answer}</td>
+      <td>${flags}</td>
+      <td>${email.explanation}</td>
+    </tr>`;
+  });
+
+  document.getElementById("facilitatorContent").innerHTML = `
+    <table>
+      <tr><th>#</th><th>Subject</th><th>Sender</th><th>Answer</th><th>Red Flags</th><th>Explanation</th></tr>
+      ${rows}
+    </table>
+  `;
+}
+
+document.addEventListener("keydown", (e) => {
+  if(e.shiftKey && (e.key === "A" || e.key === "a")){
+    const overlay = document.getElementById("facilitatorOverlay");
+    overlay.classList.toggle("hidden");
+    if(!overlay.classList.contains("hidden")) renderFacilitatorView();
+  }
+});
+
+/* ======================================================================
+   BUTTON WIRING (runs once, since this <script> is at the end of <body>)
+   ====================================================================== */
+document.getElementById("startBtn").addEventListener("click", startGame);
+document.getElementById("phishBtn").addEventListener("click", () => chooseAnswer("phish"));
+document.getElementById("treatBtn").addEventListener("click", () => chooseAnswer("treat"));
+document.getElementById("hintBtn").addEventListener("click", useHint);
+document.getElementById("finishBonusBtn").addEventListener("click", finishBonus);
+document.getElementById("nextBtn").addEventListener("click", nextEmail);
+document.getElementById("resetBtn").addEventListener("click", resetGame);
+
+document.getElementById("soundToggle").addEventListener("change", (e) => {
+  soundOn = e.target.checked;
+});
+
+document.getElementById("fullscreenBtn").addEventListener("click", () => {
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen();
+  }
+});
+
+</script>
+</body>
+</html>
